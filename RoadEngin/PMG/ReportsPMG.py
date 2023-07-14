@@ -169,7 +169,7 @@ class PMG_postprocessing:
         distressesFrameMap = []
         for shape in shapes:
             area, length, counts = np.nan, np.nan, np.nan
-            cont = shape['points']
+            cont = np.array(shape['points'])
             x, y = cont[:,0] * px2w, cont[:,1] * px2h
             if shape['labelType'] == 'polyline':
                 length = np.sum(np.sqrt(np.diff(x)**2 + np.diff(y)**2))
