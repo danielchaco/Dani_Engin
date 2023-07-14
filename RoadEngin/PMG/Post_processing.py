@@ -690,7 +690,7 @@ def PA_adding_smalls(other_damage_outs, small_exs, consider_RMs=True):
         if type(small_exs) != list:
             small_ex_out = small_exs.copy()
         else:
-            small_ex_out = np.zeros(small_ex_out[0].shape, dtype=np.uint8)
+            small_ex_out = np.zeros(small_exs[0].shape, dtype=np.uint8)
             for small_ex in small_exs:
                 small_ex_out[small_ex != 0] = 1
         if len(RMs) > 0 and consider_RMs:
