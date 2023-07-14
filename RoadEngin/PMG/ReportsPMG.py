@@ -174,7 +174,7 @@ class PMG_postprocessing:
             if shape['labelType'] == 'polyline':
                 length = np.sum(np.sqrt(np.diff(x)**2 + np.diff(y)**2))
             else:
-                area = area = 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1))) * (px2h * px2w)
+                area = 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
             if '13' in shape['label']:
                 counts = np.ceil(area / 5.5) # ASTM D6433
             distressesFrameMap.append({
