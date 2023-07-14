@@ -361,7 +361,9 @@ def evaluate_PAs(other_damage_outs, PA_min_area_to_evaluate=3750):
                     cv2.fillPoly(out_PA, pts=[cont], color=0)
             other_damage_outs[PA] = out_PA
 
-    return (other_damage_outs), small_exPAs
+        return other_damage_outs, small_exPAs
+    else:
+        return other_damage_outs, []
 
 
 def evaluate_DCs(out, other_damage_outs, DC_min_area_to_evaluate=5600, DC_min_area_exclusion=160,
