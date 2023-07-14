@@ -597,7 +597,7 @@ def centroid_isin(centroid, bbox):
     return cx > x_min and cx < x_min + w and cy > y_min and cy < y_min + h
 
 
-def crk_no_crk_analysis(crack_outs_ra, small_exs, crk_no_crk_percentage={2: .15, 3: .30}):
+def crk_no_crk_analysis(crack_outs_ra, small_exs, crk_no_crk_percentage={2: .15, 3: .30}): # Check this function 
     '''
     damages such as PA, DC, PCH can affect crack severities. This function allows to analyze if the damage
     matches a cracked area, then check the severity in terms of comparison of areas. If PA area is more than

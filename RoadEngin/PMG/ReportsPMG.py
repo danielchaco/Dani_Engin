@@ -133,7 +133,7 @@ class PMG_postprocessing:
         crack_outs_ra = crack_outs_real_area(out, crack_outs)
         # analysis crack no crack
         small_exs = [small_exPAs,small_exDCs,small_exBCHs]
-        crack_outs_ra2, small_exs = crk_no_crk_analysis(crack_outs_ra.copy(), small_exs, self.crk_no_crk_percentage)
+        # crack_outs_ra2, small_exs = crk_no_crk_analysis(crack_outs_ra.copy(), small_exs, self.crk_no_crk_percentage)
         # if crack_outs_ra2 != crack_outs_ra: # not yet, small false detections are causing wrong transformations. Predicted itself is better for now.
         #     crack_outs = real_area_2_outs(crack_outs_ra2,kernel_size)
         # add small dcs, rms to PA (only for dynates)
