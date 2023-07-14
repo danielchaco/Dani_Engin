@@ -165,7 +165,7 @@ class PMG_postprocessing:
         ## Dimensions report - for PCI
         height = out.shape[0] - self.y_top
         px2h = self.distance_between_frames / height
-        px2w = self.frame_width / (t_area_px / height)
+        px2w = (self.frame_width * self.distance_between_frames) / (t_area_px * px2h)
         distressesFrameMap = []
         for shape in shapes:
             area, length, counts = np.nan, np.nan, np.nan
@@ -179,9 +179,9 @@ class PMG_postprocessing:
                 counts = np.ceil(area / 5.5) # ASTM D6433
             distressesFrameMap.append({
                 'label'     : shape['label'],
-                'area_ft2'  : area,
-                'length_ft' : length,
-                'counts'    : counts,
+                'area_ft2'  : np.round(area,2),
+                'length_ft' : np.round(length,2),
+                'counts'    : np.round(counts,2),
             })
             
         return shapes, distressesFrameMap

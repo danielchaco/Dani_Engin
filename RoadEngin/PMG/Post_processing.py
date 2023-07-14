@@ -612,7 +612,7 @@ def crk_no_crk_analysis(crack_outs_ra, small_exs, crk_no_crk_percentage={2: .15,
     if type(small_exs) != list:
         small_ex_out = small_exs.copy()
     else:
-        small_ex_out = np.zeros(small_ex_out[0].shape, dtype=np.uint8)
+        small_ex_out = np.zeros(small_exs[0].shape, dtype=np.uint8)
         for small_ex in small_exs:
             small_ex_out[small_ex != 0] = 1
 
@@ -955,3 +955,12 @@ def change_labels_shapes(shapes, converter: dict):
     for shape in shapes:
         shape['label'] = converter[shape['label']]
     return shapes
+
+
+def gcs_url(gc_path, bucket):
+    '''
+    from the "project" path and bucket name, public gcs url is generated
+    '''
+    path = gc_path.split('project/')[-1]
+    url = f'https://storage.googleapis.com/{bucket}/{path}'
+    return url
