@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 import numpy as np
 import cv2
@@ -8,6 +9,7 @@ from RoadEngin.PMG.Post_processing import *
 class PMG_postprocessing:
     unit = 'ft'
     distance_between_frames = 20
+    frame_width = 24
     y_top = 250
     
     kernel_size = 20
@@ -83,21 +85,18 @@ class PMG_postprocessing:
     def set_borders(self,borders:list):
         self.borders = borders
         
-    def set_frame_dimension(self,frame_length,unit,ytop_ROI):
+    def set_frame_dimension(self, frame_length = distance_between_frames, frame_width = frame_width, unit = unit, ytop_ROI = y_top):
         self.distance_between_frames = frame_length
+        self.frame_width = frame_width
         self.unit = unit
         self.y_top = ytop_ROI
         
-    def get_report(self, out_path, img_shape, converter):
+    def get_reports(self, out, converter):
         '''
         RUN ALL with engin.ai labels changing at the end to converter
-        out_path: numpy file path *.npy
-        returns image information in json format.
+        out: inference array
+        returns the shapes and distresses dictionary with dimensions.
         '''
-        img_name = os.path.basename(out_path).split('_uncut')[0]
-        out = np.load(out_path)
-        if out.shape != img_shape[:2]:
-            out = cv2.resize(out, dsize=(img_shape[1], img_shape[0]), interpolation=cv2.INTER_NEAREST)
 
         # dilate
         crack_outs, other_damage_outs = dilate_detections(out, CONV_LU_INV, self.kernel_size, iterations = self.iterations)
@@ -148,6 +147,7 @@ class PMG_postprocessing:
 
         # get margen
         margen = get_margen(out, self.borders, self.y_top)
+        t_area_px = np.sum(margen)
         # other dmgs big area
         other_damage_outs = big_area_analysis(out, other_damage_outs, margen, self.big_area, self.threshold_predominantly, self.centroids_mindist, self.threshold_percentage)
 
@@ -158,24 +158,33 @@ class PMG_postprocessing:
         no_cracks_results = get_other_damages_results2(other_damage_outs,margen)
 
 
-        #  # Change label names
-
+        ## Change label names
         shapes = cracks_results + no_cracks_results
         shapes = change_labels_shapes(shapes,converter)
-
-        # start building image info
-        info_image = {
-            'shapes'  : shapes,
-            'flags'   : {},
-            'labels'  : [],
-            'imagePath'   : 'uc',
-            'externalURL' : '',
-            'imageWidth'  : img_shape[1],
-            'imageHeight' : img_shape[0],
-            'originalFilename'  : img_name
-        }
-
-        return info_image
+        
+        ## Dimensions report - for PCI
+        height = out.shape[0] - self.y_top
+        px2h = self.distance_between_frames / height
+        px2w = self.frame_width / (t_area_px / height)
+        distressesFrameMap = []
+        for shape in shapes:
+            area, length, counts = np.nan, np.nan, np.nan
+            cont = shape['points']
+            x, y = cont[:,0] * px2w, cont[:,1] * px2h
+            if shape['labelType'] == 'polyline':
+                length = np.sum(np.sqrt(np.diff(x)**2 + np.diff(y)**2))
+            else:
+                area = area = 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1))) * (px2h * px2w)
+            if '13' in shape['label']:
+                counts = np.ceil(area / 5.5) # ASTM D6433
+            distressesFrameMap.append({
+                'label'     : shape['label'],
+                'area_ft2'  : area,
+                'length_ft' : length,
+                'counts'    : counts,
+            })
+            
+        return shapes, distressesFrameMap
     
         
     
@@ -201,3 +210,22 @@ class PMG_project:
 
     def frame_length(self):
         print(self.distance_between_frames,self.unit)
+        
+
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, pd._libs.tslibs.timestamps.Timestamp):
+            return str(obj)
+        return json.JSONEncoder.default(self, obj)
+
+
+def save_json(json_dict, out_path):
+    out_file = open("myfile.json", "w")
+    with open(out_path, "w") as outfile:
+        json.dump(json_dict, outfile, indent=4, cls=NpEncoder)
