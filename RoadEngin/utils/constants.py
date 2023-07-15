@@ -577,3 +577,25 @@ PCI_CONVERTER = {
     'CV_2': '9_2',
     'CV_3': '9_3'
 }
+
+
+PCI_CODE2NAME= {1: 'Alligator Cracking',
+ 2: 'Bleeding',
+ 3: 'Block Cracking',
+ 4: 'Bumps and Sags',
+ 5: 'Corrugation',
+ 6: 'Depression',
+ 7: 'Edge Cracking',
+ 8: 'Jt. Reflextion Cracking',
+ 9: 'Lane/Shoulder Drop Off',
+ 10: 'Longitudinal and Transverse Cracking',
+ 11: 'Patching and  Utility Cut Patching',
+ 12: 'Polished Aggregate',
+ 13: 'Pothole',
+ 14: 'Railroad Crossing',
+ 15: 'Rutting',
+ 16: 'Shoving',
+ 17: 'Slippage Cracking',
+ 18: 'Swell',
+ 19: 'Raveling',
+ 20: 'Weathering'}
