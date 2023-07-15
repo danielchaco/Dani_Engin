@@ -200,42 +200,43 @@ def combine_cracks(crack_outs, threshold_area=4000, abs_min_area=625):
     '''
     combine small cracks with with biggest ones. absolute min area damages will be dropped.
     '''
-    data = []
-    for damage, crack_out in crack_outs.items():
-        conts = get_contours(crack_out)
-        for cont in conts:
-            data.append([damage, cont, cv2.contourArea(cont)])
+    if len(crack_outs) > 0:
+        data = []
+        for damage, crack_out in crack_outs.items():
+            conts = get_contours(crack_out)
+            for cont in conts:
+                data.append([damage, cont, cv2.contourArea(cont)])
 
-    df = pd.DataFrame(data, columns=['damage', 'cont', 'area'])
-    df.sort_values('area', inplace=True, ignore_index=True, ascending=False)
-    bigger_cracks = df[df.area >= threshold_area].damage.unique()
-    small_out = np.zeros(crack_out.shape, dtype=np.uint8)
+        df = pd.DataFrame(data, columns=['damage', 'cont', 'area'])
+        df.sort_values('area', inplace=True, ignore_index=True, ascending=False)
+        bigger_cracks = df[df.area >= threshold_area].damage.unique()
+        small_out = np.zeros(crack_out.shape, dtype=np.uint8)
 
-    for i in df[df.area < threshold_area].index:
-        cont = df.cont[i]
-        crack_outs[df.damage[i]] = cv2.fillPoly(crack_outs[df.damage[i]], pts=[cont], color=0)
-        cv2.fillPoly(small_out, pts=[cont], color=1)
-
-    for big_crack in bigger_cracks:
-        out_comb = crack_outs[big_crack] + small_out
-        conts = get_contours(out_comb)
-        small_conts = get_contours(small_out)
-        if len(small_conts) > 0:
-            for small_cont in small_conts:
-                if not array_in_list(small_cont, conts):
-                    crack_outs[big_crack] = cv2.fillPoly(crack_outs[big_crack], pts=[small_cont], color=1)
-                    cv2.fillPoly(small_out, pts=[small_cont], color=0)
-        else:
-            break
-
-    if np.sum(small_out != 0) > abs_min_area:
-        for i in df[(df.area < threshold_area) & (df.area > abs_min_area)].index:
+        for i in df[df.area < threshold_area].index:
             cont = df.cont[i]
-            stencil = np.zeros(crack_out.shape, dtype=np.uint8)
-            stencil = cv2.fillPoly(stencil, [cont], 1)
-            out_temp = small_out * stencil
-            if np.sum(out_temp) > 0:
-                crack_outs[df.damage[i]] = cv2.fillPoly(crack_outs[df.damage[i]], pts=[cont], color=1)
+            crack_outs[df.damage[i]] = cv2.fillPoly(crack_outs[df.damage[i]], pts=[cont], color=0)
+            cv2.fillPoly(small_out, pts=[cont], color=1)
+
+        for big_crack in bigger_cracks:
+            out_comb = crack_outs[big_crack] + small_out
+            conts = get_contours(out_comb)
+            small_conts = get_contours(small_out)
+            if len(small_conts) > 0:
+                for small_cont in small_conts:
+                    if not array_in_list(small_cont, conts):
+                        crack_outs[big_crack] = cv2.fillPoly(crack_outs[big_crack], pts=[small_cont], color=1)
+                        cv2.fillPoly(small_out, pts=[small_cont], color=0)
+            else:
+                break
+
+        if np.sum(small_out != 0) > abs_min_area:
+            for i in df[(df.area < threshold_area) & (df.area > abs_min_area)].index:
+                cont = df.cont[i]
+                stencil = np.zeros(crack_out.shape, dtype=np.uint8)
+                stencil = cv2.fillPoly(stencil, [cont], 1)
+                out_temp = small_out * stencil
+                if np.sum(out_temp) > 0:
+                    crack_outs[df.damage[i]] = cv2.fillPoly(crack_outs[df.damage[i]], pts=[cont], color=1)
 
     return clean_outs_dict(crack_outs)
 
