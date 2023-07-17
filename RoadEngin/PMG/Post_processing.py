@@ -768,6 +768,26 @@ def get_intersection_point(point1, point2, bbox, side='top'):
             return x1, y
         elif x2 <= x + w and x2 >= point1[0]:
             return x2, y + h
+        
+        
+def get_theta(conts):
+    A, Ix, Iy, xc, yc, Ixy = [],[],[],[],[],[]
+    for cont in conts:
+        M = cv2.moments(cont)
+        A.append(M['m00'])
+        Ix.append(M['m02'])
+        Iy.append(M['m20'])
+        Ixy.append(M['m11'])
+        xc.append(M['m10']/M['m00'])
+        yc.append(M['m01']/M['m00'])
+    Xc = np.dot(A,xc) / np.sum(A)
+    Yc = np.dot(A,yc) / np.sum(A)
+    Ixc = np.sum(Ix) - np.sum(A) * Yc**2
+    Iyc = np.sum(Iy) - np.sum(A) * Xc**2
+    Ixyc = np.sum(Ixy) - np.sum(A) * Xc * Yc
+    
+    theta = abs(0.5 * np.arctan2(2 * Ixyc, Iyc - Ixc))
+    return theta
 
 
 def get_polyline(out_damage, bbox, square_length=15, first_end_points=False):
@@ -775,8 +795,11 @@ def get_polyline(out_damage, bbox, square_length=15, first_end_points=False):
     square_length = min(square_length, int(w / 4), int(h / 4))
     zeros = np.zeros(out_damage.shape, dtype=np.uint8)
     conts = get_contours(out_damage)
-    M = cv2.moments(conts[0])
-    theta = abs(0.5 * np.arctan2(2 * M["mu11"], M["mu20"] - M["mu02"]))
+    if len(conts)>1:
+        theta = get_theta(conts)
+    else:
+        M = cv2.moments(conts[0])
+        theta = abs(0.5 * np.arctan2(2 * M["mu11"], M["mu20"] - M["mu02"]))
     points = []
     if theta >= np.pi / 4 and theta <= 3 * np.pi / 4:
         num_interations = int(h / square_length)
@@ -846,7 +869,7 @@ def get_margen(out, borders = ['FPAV','CUN','VEG','TRR'], y_top = 400):
     to get the area of interest based on borders and y_top
     '''
     margen = np.isin(out,[CONV_LU[b] for b in borders]).astype(np.uint8)
-    cv2.rectangle(margen,(0,0),(margen.shape[1],400),1,-1)
+    cv2.rectangle(margen,(0,0),(margen.shape[1],y_top),1,-1)
     return np.array(margen==0,np.uint8)
 
 
