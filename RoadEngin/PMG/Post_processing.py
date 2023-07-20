@@ -911,7 +911,7 @@ def big_area_analysis(out, other_damage_outs, margen,big_area, threshold_predomi
         return other_damage_outs
 
 
-def get_cracks_results2(out, crack_outs, other_damage_outs, margen, min_linear_area = 800, min_dist_border = 50):
+def get_cracks_results2(out, crack_outs, other_damage_outs, margen, converter, min_linear_area = 800, min_dist_border = 50):
     '''
     returns polygons and polylines of area and linear cracks. Shapes.
     if the area of the bbox is grater than 1mx2m it will require to shrink or
@@ -924,6 +924,7 @@ def get_cracks_results2(out, crack_outs, other_damage_outs, margen, min_linear_a
     '''
     # getting Patching mask to avoid overlays
     PCHs = bdamage_in_damages(other_damage_outs.keys(), 'PCH_')
+    converter_inv = dict(zip(converter.values(),converter.keys()))
     out_PCHs = np.zeros(out.shape,np.uint8)
     if len(PCHs) > 0:
         for PCH in PCHs:
@@ -933,6 +934,7 @@ def get_cracks_results2(out, crack_outs, other_damage_outs, margen, min_linear_a
     # genereting polygons and polylines
     shapes = []
     for damage, crack_out in crack_outs.items():
+        damage = converter_inv[converter[damage]]
         if damage in AREA_CRACKS:
             conts = get_contours(crack_out*plantilla)
             for cont in conts:

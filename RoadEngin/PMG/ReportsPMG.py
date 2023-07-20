@@ -22,7 +22,7 @@ class PMG_postprocessing:
     FB_min_area = 8000
     FB_min_area2=20000
     FJ_min_length = 250
-    min_area_crk_end = 3000
+    min_area_crk_end = 300
 
     PA_min_area_to_evaluate = 62500
     DC_min_area_to_evaluate = 5600
@@ -153,7 +153,7 @@ class PMG_postprocessing:
 
         # get results (shapes)
         # cracks_results = get_cracks_results(out, crack_outs, min_area_to_shrink, min_linear_area, min_dist_border,shrink_kernel)
-        cracks_results = get_cracks_results2(out,crack_outs, other_damage_outs, margen, self.min_linear_area, self.min_dist_border)
+        cracks_results = get_cracks_results2(out,crack_outs, other_damage_outs, margen, converter, self.min_linear_area, self.min_dist_border)
         # no_cracks_results = get_other_damages_results(other_damage_outs, min_area_int, min_dist_border)
         no_cracks_results = get_other_damages_results2(other_damage_outs,margen)
 
