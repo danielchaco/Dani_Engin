@@ -10,9 +10,9 @@ class PMG_postprocessing:
     unit = 'ft'
     distance_between_frames = 20
     frame_width = 24
-    y_top = 250
+    y_top = 350
     
-    kernel_size = 10
+    kernel_size = 5
     iterations = 1
 
     threshold_predominantly = 0.9
