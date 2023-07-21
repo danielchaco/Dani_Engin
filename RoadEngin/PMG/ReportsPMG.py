@@ -52,25 +52,28 @@ class PMG_postprocessing:
     borders = ['FPAV','CUN','VEG','TRR']
     
     related_damages = { 'FJL_3':['FCL_3','FCL_2','FCL_1','FB_3','FB_2','FB_1','FL_3','FL_2','FL_1'],
-                        'FJL_2':['FCL_2','FCL_1','FCL_3','FB_2','FB_1','FB_3','FL_2','FL_1','FL_3'],
-                        'FJL_1':['FCL_1','FCL_2','FCL_3','FB_1','FB_2','FB_3','FL_1','FL_2','FL_3'],
-                        'FJL_S':['FCL_S','FCL_1','FCL_2','FCL_3','FB_S','FB_1','FB_2','FB_3','FL_S','FL_1','FL_2','FL_3'],
-                        'FJT_3':['FCT_3','FCT_2','FCT_1','FB_3','FB_2','FB_1','FT_3','FT_2','FT_1'],
-                        'FJT_2':['FCT_2','FCT_1','FCT_3','FB_2','FB_1','FB_3','FT_2','FT_1','FT_3'],
-                        'FJT_1':['FCT_1','FCT_2','FCT_3','FB_1','FB_2','FB_3','FT_1','FT_2','FT_3'],
-                        'FJT_S':['FCT_S','FCT_1','FCT_2','FCT_3','FB_S','FB_1','FB_2','FB_3','FT_S','FT_1','FT_2','FT_3'],
+                        # 'FJL_2':['FCL_2','FCL_1','FCL_3','FB_2','FB_1','FB_3','FL_2','FL_1','FL_3'],
+                        # 'FJL_1':['FCL_1','FCL_2','FCL_3','FB_1','FB_2','FB_3','FL_1','FL_2','FL_3'],
+                        # 'FJL_S':['FCL_S','FCL_1','FCL_2','FCL_3','FB_S','FB_1','FB_2','FB_3','FL_S','FL_1','FL_2','FL_3'],
+                        # 'FJT_3':['FCT_3','FCT_2','FCT_1','FB_3','FB_2','FB_1','FT_3','FT_2','FT_1'],
+                        # 'FJT_2':['FCT_2','FCT_1','FCT_3','FB_2','FB_1','FB_3','FT_2','FT_1','FT_3'],
+                        # 'FJT_1':['FCT_1','FCT_2','FCT_3','FB_1','FB_2','FB_3','FT_1','FT_2','FT_3'],
+                        # 'FJT_S':['FCT_S','FCT_1','FCT_2','FCT_3','FB_S','FB_1','FB_2','FB_3','FT_S','FT_1','FT_2','FT_3'],
                         'PCH_2':['PCH_3','PC_2','PC_3','PC_1','FB_2','FB_3','FB_1'],
                         'PCH_3':['PCH_2','PC_3','PC_2','PC_1','FB_3','FB_2','FB_1'],
                     }
 
     related_damages_key_wins = {# join small cracks can replace this when there is more info
-        'PC_1':['FB_1','FB_2'],
-        'PC_2':['FB_2','FB_1','FB_3'],
-        'PC_3':['FB_3','FB_2'],
-        'FCL_1':['FB_1','FB_2'],
-        'FCL_2':['FB_2','FB_1','FB_3'],
-        'FCL_3':['FB_3','FB_2','FB_1'],
-        'FCL_S':['FB_1','FB_2','FB_S'],
+        'FB_1':['PC_1'],
+        'FB_2':['PC_1','PC_2'],
+        'FB_3':['PC_1','PC_2'],
+        # 'PC_1':['FB_1','FB_2'],
+        # 'PC_2':['FB_2','FB_1','FB_3'],
+        # 'PC_3':['FB_3','FB_2'],
+        # 'FCL_1':['FB_1','FB_2'],
+        # 'FCL_2':['FB_2','FB_1','FB_3'],
+        # 'FCL_3':['FB_3','FB_2','FB_1'],
+        # 'FCL_S':['FB_1','FB_2','FB_S'],
     }
 
     FR_dict = { 'FR_1':['FB_1','FB_2','FL_2','FT_2','FL_1','FT_1','PC_1','FML_1'],
@@ -85,11 +88,13 @@ class PMG_postprocessing:
     def set_borders(self,borders:list):
         self.borders = borders
         
-    def set_frame_dimension(self, frame_length = distance_between_frames, frame_width = frame_width, unit = unit, ytop_ROI = y_top):
+    def set_frame_dimension(self, frame_length = distance_between_frames, frame_width = frame_width, unit = unit):
         self.distance_between_frames = frame_length
         self.frame_width = frame_width
         self.unit = unit
-        self.y_top = ytop_ROI
+        
+    def set_y_top(self, y_top = y_top):
+        self.y_top = y_top
         
     def get_reports(self, out, converter):
         '''
@@ -111,6 +116,7 @@ class PMG_postprocessing:
         crack_outs = join_related_damages(crack_outs,self.related_damages)
         # FBs could be PCs, so they are joined if they are in touch with PC, following the hirarchy.
         crack_outs = join_related_damages(crack_outs,self.related_damages_key_wins,key_dmg_wins=True)
+        crack_outs = mix_same_type(crack_outs, self.threshold_predominantly)
         # if there are FB with small area, they can be join to intersected cracks
         crack_outs = join_small_FBs(crack_outs, self.FB_min_area)
         crack_outs = FB2FL(crack_outs, self.FB_min_area2)
