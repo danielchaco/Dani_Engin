@@ -196,7 +196,7 @@ def mix_same_type(outs_dict, threshold_predominantly=0.6, centroids_mindist=40):
     return clean_outs_dict(outs_dict)
 
 
-def combine_cracks(crack_outs, threshold_area=4000, abs_min_area=625):
+def combine_cracks(crack_outs, threshold_area = 4000, abs_min_area = 625):
     '''
     combine small cracks with with biggest ones. absolute min area damages will be dropped.
     '''

@@ -12,10 +12,10 @@ class PMG_postprocessing:
     frame_width = 24
     y_top = 250
     
-    kernel_size = 20
+    kernel_size = 10
     iterations = 1
 
-    threshold_predominantly = 0.5
+    threshold_predominantly = 0.9
     centroids_mindist=80
     threshold_area = 5600
     abs_min_area = 1000
@@ -106,7 +106,7 @@ class PMG_postprocessing:
         # mix same type
         crack_outs = mix_same_type(crack_outs, self.threshold_predominantly)
         # Small cracks are joined to biggest which are intersecting the delated area
-        crack_outs = combine_cracks(crack_outs, self.threshold_area, self.abs_min_area)
+        # crack_outs = combine_cracks(crack_outs, self.threshold_area, self.abs_min_area)
         # FJT and other damages can be joined if they are in touch with other cracks, following the hirarchy.
         crack_outs = join_related_damages(crack_outs,self.related_damages)
         # FBs could be PCs, so they are joined if they are in touch with PC, following the hirarchy.
