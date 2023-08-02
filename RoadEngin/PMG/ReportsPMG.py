@@ -7,101 +7,120 @@ from RoadEngin.PMG.Post_processing import *
 
 
 class PMG_postprocessing:
-    unit = 'ft'
-    distance_between_frames = 20
-    frame_width = 24
-    y_top = 350
+    """
+    This class is used to store the parameters for the post-processing of the PMG model.
     
-    kernel_size = 5
-    iterations = 1
-
-    threshold_predominantly = 0.9
-    centroids_mindist=80
-    threshold_area = 5600
-    abs_min_area = 1000
-    FB_min_area = 8000
-    FB_min_area2=20000
-    FJ_min_length = 250
-    min_area_crk_end = 300
-
-    PA_min_area_to_evaluate = 62500
-    DC_min_area_to_evaluate = 5600
-    DC_min_area_exclusion = 160
-    DC_true_percentage = 0.70
-    square_ratio = 3
-    BCH_min_area_to_evaluate = 5600
-    BCH_min_area_exclusion = 400
-    BCH_true_percentage = 0.70
-    PCH_min_area = 90000
-    consider_RMs=True
-    min_area=400
-    DSU_min_area = 62500
-    thrRMarea = 25000
-    min_area_PCH = 60000
-
-    crk_no_crk_percentage = {2:.15, 3:.30}
-    big_area = ['DSU_1','DSU_2','DSU_3','PA_1','PA_2','PA_3']
-    threshold_percentage=60/100
-
-    min_area_to_shrink = 125000
-    min_linear_area = 600
-    min_dist_border = 50
-    min_area_int = 2500
-    shrink_kernel = 40
-
-    borders = ['FPAV','CUN','VEG','TRR']
+    Attributes:
+        unit (str): Unit of the project. Default is 'ft'.
+        distance_between_frames (int): Distance between frames in the project. Default is 20.
+        frame_width (int): Width of the frame in the project. Default is 24.
+        y_top (int): Top of the frame in the project. Default is 350.
+        kernel_size (int): Kernel size for the dilation of the cracks. Default is 5.
+        iterations (int): Number of iterations for the dilation of the cracks. Default is 1.
+        borders (list): List of the borders of the project. Default is ['FPAV','CUN','VEG','TRR','CAR'].
+        threshold_predominantly (float): Threshold for the predominantly cracks. Default is 0.9.
+        centroids_mindist (int): Minimum distance between centroids. Default is 80.
+        threshold_area (int): Threshold for the area of the cracks. Default is 5600.
+        abs_min_area (int): Minimum area of the cracks. Default is 1000.
+        FB_min_area (int): Minimum area of the FB cracks. Default is 8000.
+        FB_min_area2 (int): Minimum area of the FB cracks. Default is 20000.
+        FJ_min_length (int): Minimum length of the FJ cracks. Default is 250.
+        min_area_crk_end (int): Minimum area of the cracks. Default is 300.
+        PA_min_area_to_evaluate (int): Minimum area of the PA cracks. Default is 62500.
+        DC_min_area_to_evaluate (int): Minimum area of the DC cracks. Default is 5600.
+        DC_min_area_exclusion (int): Minimum area of the DC cracks. Default is 160.
+        DC_true_percentage (float): Threshold for the DC cracks. Default is 0.70.
+        square_ratio (int): Ratio for the square of the DC cracks. Default is 3.
+        BCH_min_area_to_evaluate (int): Minimum area of the BCH cracks. Default is 5600.
+        BCH_true_percentage (float): Threshold for the BCH cracks. Default is 0.70.
+        PCH_min_area (int): Minimum area of the PCH cracks. Default is 90000.
+        consider_RMs (bool): Consider the RMs for the PA cracks. Default is True.
+        min_area (int): Minimum area of the cracks. Default is 400.
+        DSU_min_area (int): Minimum area of the DSU cracks. Default is 62500.
+        thrRMarea (int): Threshold for the RMs. Default is 25000.
+        min_area_PCH (int): Minimum area of the PCH cracks. Default is 60000.
+        crk_no_crk_percentage (dict): Dictionary with the percentage of the cracks. Default is {2:.15, 3:.30}.
+        big_area (list): List of the big areas. Default is ['DSU_1','DSU_2','DSU_3','PA_1','PA_2','PA_3'].
+        threshold_percentage (float): Threshold for the percentage of the cracks. Default is 60/100.
+        min_area_to_shrink (int): Minimum area to shrink. Default is 125000.
+        min_linear_area (int): Minimum linear area. Default is 600.
+        min_dist_border (int): Minimum distance to the border. Default is 50.
+        min_area_int (int): Minimum area of the cracks. Default is 2500.
+        shrink_kernel (int): Kernel size for the shrink of the cracks. Default is 40.
+        related_damages (dict): Dictionary with the related damages. 
+        related_damages_key_wins (dict): Dictionary with the related damages.
+        FR_dict (dict): Dictionary with the FRs.
+    """
+    def __init__(self, **kwargs):
+        # initial setup
+        self.unit = kwargs.get('unit', 'ft')
+        self.distance_between_frames = kwargs.get('distance_between_frames', 20)
+        self.frame_width = kwargs.get('frame_width', 24)
+        self.y_top = kwargs.get('y_top', 350)
+        # dilate and shrink
+        self.kernel_size = kwargs.get('kernel_size', 5)
+        self.iterations = kwargs.get('iterations', 1)
+        # margins
+        self.borders = kwargs.get('borders', ['FPAV','CUN','VEG','TRR','CAR'])
+        # out transformation
+        self.threshold_predominantly = kwargs.get('threshold_predominantly', 0.9)
+        self.centroids_mindist = kwargs.get('centroids_mindist', 80)
+        self.threshold_area = kwargs.get('threshold_area', 5600)
+        self.abs_min_area = kwargs.get('abs_min_area', 1000)
+        self.FB_min_area = kwargs.get('FB_min_area', 8000)
+        self.FB_min_area2 = kwargs.get('FB_min_area2', 20000)
+        self.FJ_min_length = kwargs.get('FJ_min_length', 250)
+        self.min_area_crk_end = kwargs.get('min_area_crk_end', 300)
+        self.PA_min_area_to_evaluate = kwargs.get('PA_min_area_to_evaluate', 62500)
+        self.DC_min_area_to_evaluate = kwargs.get('DC_min_area_to_evaluate', 5600)
+        self.DC_min_area_exclusion = kwargs.get('DC_min_area_exclusion', 160)
+        self.DC_true_percentage = kwargs.get('DC_true_percentage', 0.70)
+        self.square_ratio = kwargs.get('square_ratio', 3)
+        self.BCH_min_area_to_evaluate = kwargs.get('BCH_min_area_to_evaluate', 5600)
+        self.BCH_true_percentage = kwargs.get('BCH_true_percentage', 0.70)
+        self.PCH_min_area = kwargs.get('PCH_min_area', 90000)
+        self.consider_RMs = kwargs.get('consider_RMs', True)
+        self.min_area = kwargs.get('min_area', 400)
+        self.DSU_min_area = kwargs.get('DSU_min_area', 62500)
+        self.thrRMarea = kwargs.get('thrRMarea', 25000)
+        self.min_area_PCH = kwargs.get('min_area_PCH', 60000)
+        self.crk_no_crk_percentage = kwargs.get('crk_no_crk_percentage', {2:.15, 3:.30})
+        self.big_area = kwargs.get('big_area', ['DSU_1','DSU_2','DSU_3','PA_1','PA_2','PA_3'])
+        self.threshold_percentage = kwargs.get('threshold_percentage', 60/100)
+        self.min_area_to_shrink = kwargs.get('min_area_to_shrink', 125000)
+        self.min_linear_area = kwargs.get('min_linear_area', 600)
+        self.min_dist_border = kwargs.get('min_dist_border', 50)
+        self.min_area_int = kwargs.get('min_area_int', 2500)
+        self.shrink_kernel = kwargs.get('shrink_kernel', 40)
+        self.related_damages = kwargs.get('related_damages', {
+            'FJL_3':['FCL_3','FCL_2','FCL_1','FB_3','FB_2','FB_1','FL_3','FL_2','FL_1'],
+            'PCH_2':['PCH_3','PC_2','PC_3','PC_1','FB_2','FB_3','FB_1'],
+            'PCH_3':['PCH_2','PC_3','PC_2','PC_1','FB_3','FB_2','FB_1'],
+        })
+        self.related_damages_key_wins = kwargs.get('related_damages_key_wins', {
+            'FB_1':['PC_1'],
+            'FB_2':['PC_1','PC_2'],
+            'FB_3':['PC_1','PC_2'],
+        })
+        self.FR_dict = kwargs.get('FR_dict', {
+            'FR_1':['FB_1','FB_2','FL_2','FT_2','FL_1','FT_1','PC_1','FML_1'],
+            'FR_2':['FB_2','FB_1','FB_3','FL_3','FT_3','FL_2','FT_2','PC_1','PC_2','FML_2'],
+            'FR_3':['FB_3','FB_2','FL_3','FT_3','FL_2','FT_2','FL_1','FT_1','PC_2','PC_3','FML_3'],
+            'FR_S':['FB_S','FL_S','FT_S','FL_1','FT_1','PC_S','FB_1','PC_1'],
+        })
     
-    related_damages = { 'FJL_3':['FCL_3','FCL_2','FCL_1','FB_3','FB_2','FB_1','FL_3','FL_2','FL_1'],
-                        # 'FJL_2':['FCL_2','FCL_1','FCL_3','FB_2','FB_1','FB_3','FL_2','FL_1','FL_3'],
-                        # 'FJL_1':['FCL_1','FCL_2','FCL_3','FB_1','FB_2','FB_3','FL_1','FL_2','FL_3'],
-                        # 'FJL_S':['FCL_S','FCL_1','FCL_2','FCL_3','FB_S','FB_1','FB_2','FB_3','FL_S','FL_1','FL_2','FL_3'],
-                        # 'FJT_3':['FCT_3','FCT_2','FCT_1','FB_3','FB_2','FB_1','FT_3','FT_2','FT_1'],
-                        # 'FJT_2':['FCT_2','FCT_1','FCT_3','FB_2','FB_1','FB_3','FT_2','FT_1','FT_3'],
-                        # 'FJT_1':['FCT_1','FCT_2','FCT_3','FB_1','FB_2','FB_3','FT_1','FT_2','FT_3'],
-                        # 'FJT_S':['FCT_S','FCT_1','FCT_2','FCT_3','FB_S','FB_1','FB_2','FB_3','FT_S','FT_1','FT_2','FT_3'],
-                        'PCH_2':['PCH_3','PC_2','PC_3','PC_1','FB_2','FB_3','FB_1'],
-                        'PCH_3':['PCH_2','PC_3','PC_2','PC_1','FB_3','FB_2','FB_1'],
-                    }
-
-    related_damages_key_wins = {# join small cracks can replace this when there is more info
-        'FB_1':['PC_1'],
-        'FB_2':['PC_1','PC_2'],
-        'FB_3':['PC_1','PC_2'],
-        # 'PC_1':['FB_1','FB_2'],
-        # 'PC_2':['FB_2','FB_1','FB_3'],
-        # 'PC_3':['FB_3','FB_2'],
-        # 'FCL_1':['FB_1','FB_2'],
-        # 'FCL_2':['FB_2','FB_1','FB_3'],
-        # 'FCL_3':['FB_3','FB_2','FB_1'],
-        # 'FCL_S':['FB_1','FB_2','FB_S'],
-    }
-
-    FR_dict = { 'FR_1':['FB_1','FB_2','FL_2','FT_2','FL_1','FT_1','PC_1','FML_1'],
-                'FR_2':['FB_2','FB_1','FB_3','FL_3','FT_3','FL_2','FT_2','PC_1','PC_2','FML_2'],
-                'FR_3':['FB_3','FB_2','FL_3','FT_3','FL_2','FT_2','FL_1','FT_1','PC_2','PC_3','FML_3'],
-                'FR_S':['FB_S','FL_S','FT_S','FL_1','FT_1','PC_S','FB_1','PC_1']}
-    
-    def set_dilate_params(self,kernel_size,iterations) -> None:
-        self.kernel_size = kernel_size
-        self.iterations = iterations
-        
-    def set_borders(self,borders:list):
-        self.borders = borders
-        
-    def set_frame_dimension(self, frame_length = distance_between_frames, frame_width = frame_width, unit = unit):
-        self.distance_between_frames = frame_length
-        self.frame_width = frame_width
-        self.unit = unit
-        
-    def set_y_top(self, y_top = y_top):
-        self.y_top = y_top
-        
     def get_reports(self, out, converter):
-        '''
-        RUN ALL with engin.ai labels changing at the end to converter
-        out: inference array
-        returns the shapes and distresses dictionary with dimensions.
-        '''
+        """
+        This function is used to get the reports of the PMG model. RUN ALL with engin.ai labels changing at the end to converter
+        
+        Args: 
+            out (array): Array with the predictions of the PMG model.
+            converter (dict): Dictionary with the conversion of the labels.
+            
+        Returns:
+            shapes (list): List with the shapes of the cracks.
+            distressesFrameMap (list): List with the distresses of the cracks.
+        """
 
         # dilate
         crack_outs, other_damage_outs = dilate_detections(out, CONV_LU_INV, self.kernel_size, iterations = self.iterations)
@@ -191,31 +210,6 @@ class PMG_postprocessing:
             })
             
         return shapes, distressesFrameMap
-    
-        
-    
-class PMG_project:
-
-    project = {}
-
-    def __init__(self, swin_model, unit = 'ft', distance_between_frames = 20):
-        self.unit = unit
-        self.dbf = distance_between_frames
-
-    def load_project(self, xls, ):
-        df_xls = xls if type(xls) == pd.core.frame.DataFrame else pd.read_excel(xls)
-
-    def load_project_from_dict(self, project_info: dict):
-        number_of_videos = len(project_info.keys())
-        number_of_frames = np.sum([len(project_info[v]['frames']) for v in project_info.keys()])
-        if number_of_videos > 0 and number_of_frames > number_of_videos:
-            print(f'Project loaded succesfully! \n{number_of_videos} videos.\n{number_of_frames} frames.')
-            self.project = project_info
-        else:
-            print('Missing videos and/or frames in the dictionary.')
-
-    def frame_length(self):
-        print(self.distance_between_frames,self.unit)
         
 
 class NpEncoder(json.JSONEncoder):

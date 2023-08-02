@@ -680,6 +680,37 @@ def crk_no_crk_analysis(crack_outs_ra, small_exs, crk_no_crk_percentage={2: .15,
         return new_crack_outs_ra, small_exs
     else:
         return crack_outs_ra, small_exs
+    
+
+def distance_point_to_line(point, start, end):
+    x, y = point
+    x1, y1 = start
+    x2, y2 = end
+    numerator = abs((y2-y1)*x - (x2-x1)*y + x2*y1 - y2*x1)
+    denominator = math.sqrt((y2-y1)**2 + (x2-x1)**2)
+    return numerator / denominator
+
+def rdp_simplify(points, tolerance):
+    if len(points) <= 2:
+        return points
+
+    dmax = 0
+    index = 0
+    for i in range(1, len(points) - 1):
+        d = distance_point_to_line(points[i], points[0], points[-1])
+        if d > dmax:
+            index = i
+            dmax = d
+
+    if dmax > tolerance:
+        part1 = rdp_simplify(points[:index + 1], tolerance)
+        part2 = rdp_simplify(points[index:], tolerance)
+        return part1[:-1] + part2
+    else:
+        return [points[0], points[-1]]
+
+def simplify_polygon(polygon, tolerance):
+    return rdp_simplify(polygon, tolerance)
 
 
 def PA_adding_smalls(other_damage_outs, small_exs, consider_RMs=True):
@@ -864,7 +895,7 @@ def FB2FL(crack_outs_dict, FB_min_area=20000):
                 crack_outs_dict[FB] = out_FB
     return clean_outs_dict(crack_outs_dict)
 
-def get_margen(out, borders = ['FPAV','CUN','VEG','TRR'], y_top = 400):
+def get_margen(out, borders = ['FPAV','CUN','VEG','TRR','CAR'], y_top = 400):
     '''
     to get the area of interest based on borders and y_top
     '''
@@ -941,7 +972,7 @@ def get_cracks_results2(out, crack_outs, other_damage_outs, margen, converter, m
                 shape = {}
                 shape['label'] = damage
                 shape['labelType'] = 'polygon'
-                shape['points'] = cont.reshape(len(cont),2)
+                shape['points'] = simplify_polygon(cont.reshape(len(cont),2), TOLERANCE_POLYGON)
                 shapes.append(shape)
 
         if damage in LINE_CRACKS:
@@ -974,7 +1005,7 @@ def get_other_damages_results2(other_damage_outs,margen):
             shape = {}
             shape['label'] = damage
             shape['labelType'] = 'polygon'
-            shape['points'] = cont.reshape(len(cont),2)
+            shape['points'] = simplify_polygon(cont.reshape(len(cont),2), TOLERANCE_POLYGON)
             shapes.append(shape)
     return shapes
 

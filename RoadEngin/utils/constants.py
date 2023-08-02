@@ -599,3 +599,6 @@ PCI_CODE2NAME= {1: 'Alligator Cracking',
  18: 'Swell',
  19: 'Raveling',
  20: 'Weathering'}
+
+TOLERANCE_POLYGON = 4
+TOLERANCE_POLYLINE = 4
