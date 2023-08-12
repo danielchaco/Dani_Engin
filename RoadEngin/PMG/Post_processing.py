@@ -6,12 +6,12 @@ from RoadEngin.utils.constants import *
 import math
 
 
-def get_contours(img):
+def get_contours(img, method = cv2.CHAIN_APPROX_SIMPLE):
     kernel = np.ones((5, 5), np.uint8)
     ret, thresh = cv2.threshold(img.astype(np.uint8), 0.3, 1.01, 0)
     img_dilated = cv2.dilate(thresh, kernel, iterations=1)
 
-    cnts = cv2.findContours(img_dilated.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cv2.findContours(img_dilated.copy(), cv2.RETR_EXTERNAL, method)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
     return cnts
 
@@ -692,7 +692,7 @@ def distance_point_to_line(point, start, end):
     return numerator / denominator
 
 def rdp_simplify(points, tolerance):
-    if len(points) <= 2:
+    if len(points) <= 20:
         return points
 
     dmax = 0
@@ -943,6 +943,12 @@ def big_area_analysis(out, other_damage_outs, margen,big_area, threshold_predomi
         return other_damage_outs
 
 
+def get_approx_cont(cont,epochs = 0.001):
+    peri = cv2.arcLength(cont, True)
+    approx = cv2.approxPolyDP(cont, epochs * peri, True)
+    return approx
+
+
 def get_cracks_results2(out, crack_outs, other_damage_outs, margen, converter, min_linear_area = 800, min_dist_border = 50):
     '''
     returns polygons and polylines of area and linear cracks. Shapes.
@@ -968,12 +974,12 @@ def get_cracks_results2(out, crack_outs, other_damage_outs, margen, converter, m
     for damage, crack_out in crack_outs.items():
         damage = converter_inv[converter[damage]]
         if damage in AREA_CRACKS:
-            conts = get_contours(crack_out*plantilla)
+            conts = get_contours(crack_out*plantilla, method = cv2.CHAIN_APPROX_SIMPLE)
             for cont in conts:
                 shape = {}
                 shape['label'] = damage
                 shape['labelType'] = 'polygon'
-                shape['points'] = simplify_polygon(cont.reshape(len(cont),2), TOLERANCE_POLYGON)
+                shape['points'] = get_approx_cont(cont).reshape(len(cont),2) #simplify_polygon(cont.reshape(len(cont),2), TOLERANCE_POLYGON)
                 shapes.append(shape)
 
         if damage in LINE_CRACKS:

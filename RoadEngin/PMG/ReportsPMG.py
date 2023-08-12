@@ -108,6 +108,7 @@ class PMG_postprocessing:
             'FR_3':['FB_3','FB_2','FL_3','FT_3','FL_2','FT_2','FL_1','FT_1','PC_2','PC_3','FML_3'],
             'FR_S':['FB_S','FL_S','FT_S','FL_1','FT_1','PC_S','FB_1','PC_1'],
         })
+        self.BCH_min_area_exclusion = kwargs.get('BCH_min_area_exclusion', 400)
     
     def get_reports(self, out, converter):
         """
