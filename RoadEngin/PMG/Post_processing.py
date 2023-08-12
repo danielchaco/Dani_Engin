@@ -1012,7 +1012,7 @@ def get_other_damages_results2(other_damage_outs,margen):
             shape = {}
             shape['label'] = damage
             shape['labelType'] = 'polygon'
-            shape['points'] = simplify_polygon(cont.reshape(len(cont),2), TOLERANCE_POLYGON)
+            shape['points'] = get_approx_cont(cont).reshape(len(cont),2) # simplify_polygon(cont.reshape(len(cont),2), TOLERANCE_POLYGON)
             shapes.append(shape)
     return shapes
 
