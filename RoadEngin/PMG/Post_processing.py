@@ -976,10 +976,11 @@ def get_cracks_results2(out, crack_outs, other_damage_outs, margen, converter, m
         if damage in AREA_CRACKS:
             conts = get_contours(crack_out*plantilla, method = cv2.CHAIN_APPROX_SIMPLE)
             for cont in conts:
+                cont = get_approx_cont(cont)
                 shape = {}
                 shape['label'] = damage
                 shape['labelType'] = 'polygon'
-                shape['points'] = get_approx_cont(cont).reshape(len(cont),2) #simplify_polygon(cont.reshape(len(cont),2), TOLERANCE_POLYGON)
+                shape['points'] = cont.reshape(len(cont),2) #simplify_polygon(cont.reshape(len(cont),2), TOLERANCE_POLYGON)
                 shapes.append(shape)
 
         if damage in LINE_CRACKS:
@@ -1009,10 +1010,11 @@ def get_other_damages_results2(other_damage_outs,margen):
     for damage, other_damage_out in other_damage_outs.items():
         conts = get_contours(np.array(other_damage_out!=0,np.uint8)*margen)
         for cont in conts:
+            cont = get_approx_cont(cont)
             shape = {}
             shape['label'] = damage
             shape['labelType'] = 'polygon'
-            shape['points'] = get_approx_cont(cont).reshape(len(cont),2) # simplify_polygon(cont.reshape(len(cont),2), TOLERANCE_POLYGON)
+            shape['points'] = cont.reshape(len(cont),2) # simplify_polygon(cont.reshape(len(cont),2), TOLERANCE_POLYGON)
             shapes.append(shape)
     return shapes
 
