@@ -896,7 +896,8 @@ def FB2FL(crack_outs_dict, FB_min_area=20000):
                 crack_outs_dict[FB] = out_FB
     return clean_outs_dict(crack_outs_dict)
 
-def get_margen(out, borders = ['FPAV','CUN','VEG','TRR','CAR'], y_top = 400):
+
+def get_margen(out, borders = ['FPAV','CUN','VEG','TRR','CAR','SUM','ALC','ALC_1','ALC_2','ALC_3'], y_top = 400):
     '''
     to get the area of interest based on borders and y_top
     '''
