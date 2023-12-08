@@ -4,9 +4,7 @@ import json
 import csv
 import numbers
 from shutil import copyfile
-from treelib import Node, Tree
 from time import sleep
-from tqdm.auto import tqdm
 import glob
 import random
 import cv2

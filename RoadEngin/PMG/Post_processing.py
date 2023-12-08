@@ -2,7 +2,10 @@ import pandas as pd
 import numpy as np
 import cv2
 import os
-from RoadEngin.utils.constants import *
+import sys
+sys.path.append(r'/Users/daniel/Documents/Pavement Management/Scripts/Dani_Engin/RoadEngin/utils')
+# from RoadEngin.utils.constants import *
+from constants import *
 import math
 
 
@@ -897,6 +900,39 @@ def FB2FL(crack_outs_dict, FB_min_area=20000):
     return clean_outs_dict(crack_outs_dict)
 
 
+# def get_margen(out, borders = ['FPAV','CUN','VEG','TRR','CAR','SUM','ALC','ALC_1','ALC_2','ALC_3'], y_top = 400, road_way_LD = False):
+#     '''
+#     to get the area of interest based on borders and y_top
+#     '''
+#     margen = np.isin(out,[CONV_LU[b] for b in borders]).astype(np.uint8)
+    
+#     if road_way_LD:
+#         LD_out = np.isin(out,[CONV_LU['LD']]).astype(np.uint8)
+#         conts = get_contours(LD_out)
+#         min_area = 4/100 * LD_out.shape[0] * LD_out.shape[1]
+#         LD_left = np.zeros(LD_out.shape,np.uint8)
+#         LD_right = np.zeros(LD_out.shape,np.uint8)
+#         for cont in conts:
+#             if cv2.contourArea(cont) > min_area:
+#                 xc, yc = get_centroid(cont)
+#                 if xc < LD_out.shape[1]/3:
+#                     LD_left = cv2.fillPoly(LD_left, [cont], 1)
+#                 if xc > LD_out.shape[1]*2/3:
+#                     LD_right = cv2.fillPoly(LD_right, [cont], 1)
+#         if np.sum(LD_left) > 0:
+#             pol_left = get_polyline(LD_left, check_bbox_limits(cv2.boundingRect(LD_left),0,LD_out.shape[1],LD_out.shape,0), square_length=10, first_end_points=True).reverse()
+#             first_point = pol_left[0]
+#             end_point = pol_left[-1]
+#             margen = cv2.fillPoly(LD_right, [[0,first_point[1]],pol_left,[0,end_point[1]]], 1)
+#         if np.sum(LD_right) > 0:
+#             pol_right = get_polyline(LD_right, check_bbox_limits(cv2.boundingRect(LD_right),0,LD_out.shape[1],LD_out.shape,0), square_length=10, first_end_points=True)
+#             first_point = pol_right[0]
+#             end_point = pol_right[-1]
+#             margen = cv2.fillPoly(LD_right, [[LD_out.shape[0],first_point[1]],pol_right,[LD_out.shape[0],end_point[1]]], 1)
+    
+#     cv2.rectangle(margen,(0,0),(margen.shape[1],y_top),1,-1)
+#     return np.array(margen==0,np.uint8)
+
 def get_margen(out, borders = ['FPAV','CUN','VEG','TRR','CAR','SUM','ALC','ALC_1','ALC_2','ALC_3'], y_top = 400, road_way_LD = False):
     '''
     to get the area of interest based on borders and y_top
@@ -928,7 +964,13 @@ def get_margen(out, borders = ['FPAV','CUN','VEG','TRR','CAR','SUM','ALC','ALC_1
             margen = cv2.fillPoly(LD_right, [[LD_out.shape[0],first_point[1]],pol_right,[LD_out.shape[0],end_point[1]]], 1)
     
     cv2.rectangle(margen,(0,0),(margen.shape[1],y_top),1,-1)
-    return np.array(margen==0,np.uint8)
+    margen = np.array(margen==0,np.uint8)
+    
+    conts = get_contours(margen)
+    cont = max(conts, key = cv2.contourArea)
+    stencil = np.zeros(out.shape,dtype=np.uint8)
+    stencil = cv2.fillPoly(stencil, [cont], 1)
+    return margen * stencil
 
 
 def big_area_analysis(out, other_damage_outs, margen,big_area, threshold_predominantly, centroids_mindist,threshold_percentage=70/100):
